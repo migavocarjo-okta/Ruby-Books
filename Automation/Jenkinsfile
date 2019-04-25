@@ -1,0 +1,344 @@
+/***************************************************************************************************
+ *  Ruby build template
+ ***************************************************************************************************/
+
+/***************************************************************************************************
+* LEGEND:
+***************************************************************************************************/
+///////////////////////////////////// START OF PIPELINE ////////////////////////////////////////////
+node("hubot")
+{
+  //clean the workspace
+  cleanWs()
+
+  // Set Variables
+  def domain_name='<DOMAIN_NAME>'
+  def user_name='<USER_NAME>'
+
+  // Globals
+  def payload
+  def masterJobNumber
+  def gitFlowInfo
+  // Found errors
+  def foundErrors='0'
+  def branch
+  def deployment_id
+  def git_url="${domain_name}/demo/Ruby-Books.git"
+  def api_url="${domain_name}/api/v3"
+  def app_name="${user_name}-ruby-books"
+
+  // Need to get the branch of code we need
+  try
+  {
+    // Grab Branch from ENV
+    branch = env.CHANGE_BRANCH
+    if (branch == null || branch == "null")
+    {
+      // Set to master if not passed
+      branch = "master"
+      echo "No Passed Parameter: branch"
+      echo "Defaulting to: master"
+    }
+  }
+  catch(all)
+  {
+    branch = "master"
+    echo "No Passed Parameter: branch"
+    echo "Defaulting to: master"
+  }
+
+  sh "echo ********** BRANCH: ***********"
+  sh "echo $branch"
+
+  // Clone the repo
+  git credentialsId: 'github-cred', url: "${git_url}", branch: "${branch}"
+  
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Build Ruby Stage
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  stage("BundleInstall")
+  {
+    sh "echo '#########################################'"
+    sh "echo 'Running Bundle Install'"
+    sh "echo '#########################################'"
+
+    try
+    {
+       // run the build
+      sh "chmod +x Automation/bundle-install.sh ; ./Automation/bundle-install.sh"
+      
+      def statusBody = """
+      {
+            "state": "success",
+            "context":"Bundle Install",
+            "target_url": "${build_url}",
+            "description":"Bundle Install Succeeded"
+      }
+      """
+      updateStatus(api_url, statusBody)
+    }
+    catch(all)
+    {
+      echo "ERROR encountered during ruby bundle install"
+      
+      def statusBody = """
+      {
+            "state": "failure",
+            "context":"Bundle Install",
+            "target_url": "${build_url}",
+            "description":"ERROR encountered during ruby bundle install"
+      }
+      """
+      updateStatus(api_url, statusBody)
+      
+      throw all
+      foundErrors=1
+    }
+  }
+
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Generate and Configure DB Stage
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  stage("Generate And Configure DB")
+  {
+    sh "echo '#########################################'"
+    sh "echo 'Generating and configuring Postgres DB'"
+    sh "echo '#########################################'"
+
+    try
+    {
+      // run the build
+      sh "chmod +x Automation/configure-install-db.sh ; ./Automation/configure-install-db.sh"
+      
+      def statusBody = """
+      {
+            "state": "success",
+            "context":"DB Config",
+            "target_url": "${build_url}",
+            "description":"DB successfully configured"
+      }
+      """
+      updateStatus(api_url, statusBody)
+    }
+    catch(all)
+    {
+      echo "ERROR encountered during ruby db config"
+      
+      def statusBody = """
+      {
+            "state": "failure",
+            "context":"DB Config",
+            "target_url": "${build_url}",
+            "description":"ERROR encountered during ruby db config"
+      }
+      """
+      updateStatus(api_url, statusBody)
+      
+      throw all
+      foundErrors=1
+    }
+  }
+
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Run RSPEC Stage
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  stage("Run RSPEC")
+  {
+    sh "echo '#########################################'"
+    sh "echo 'Running Ruby RSPEC'"
+    sh "echo '#########################################'"
+
+    try
+    {
+      // run the build
+      sh "chmod +x Automation/run-rspec.sh ; ./Automation/run-rspec.sh"
+      
+      def statusBody = """
+      {
+            "state": "success",
+            "context":"RSpec",
+            "target_url": "${build_url}",
+            "description":"RSpec tests passed"
+      }
+      """
+      updateStatus(api_url, statusBody)
+    }
+    catch(all)
+    {
+      echo "ERROR encountered during ruby rspec"
+      
+      def statusBody = """
+      {
+            "state": "failure",
+            "context":"RSpec",
+            "target_url": "${build_url}",
+            "description":"ERROR encountered during RSPEC"
+      }
+      """
+      updateStatus(api_url, statusBody)
+      
+      throw all
+      foundErrors=1
+      
+
+    }
+  }
+
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Validate if errors found
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  if(foundErrors=='1')
+  {
+    sh "echo 'ERROR! Failed to Build Ruby App' && exit 911"
+  }
+
+
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Deploy to Heroku Stage
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  if (branch == "master")
+  {
+    stage("DeployToHerokuProduction")
+    {
+      sh "echo '#########################################'"
+      sh "echo 'Deploying to Heroku Production'"
+      sh "echo '#########################################'"
+      try
+      {
+         // run the build
+        sh "chmod +x Automation/deploy-master-to-heroku.sh ; bash ./Automation/deploy-master-to-heroku.sh demo Ruby-Books ${app_name}"
+      }
+      catch(all)
+      {
+        echo "ERROR encountered during heroku deployment"
+        throw all
+        foundErrors=1
+      }
+    }
+  }
+  else
+  {
+    stage("DeployToHerokuReview")
+    {
+      sh "echo '#########################################'"
+      sh "echo 'Deploying to Heroku Review Environment'"
+      sh "echo '#########################################'"
+
+      // Grab PR from ENV
+      pr_number = env.CHANGE_ID
+
+      def createDeploymentBody = """
+      {
+            "ref": "${branch}",
+            "required_contexts":[],
+            "environment": "review"
+      }
+      """
+      def createDeploymentResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: createDeploymentBody, url: "${api_url}/repos/demo/Ruby-Books/deployments"
+      echo "Status: ${createDeploymentResponse.status}\nContent: ${createDeploymentResponse.content}"
+
+      def deployment = readJSON text: createDeploymentResponse.content
+      echo "Deployment: ${deployment}"
+      deployment_id = deployment.id
+      echo "ID: ${deployment_id}"
+
+      def deploymentPendingBody = """
+      {
+            "state": "pending",
+            "log_url": "https://dashboard.heroku.com/apps/<YOUR-NAME>-ruby-books-pr-${pr_number}/logs"
+      }
+      """
+      def deploymentPendingResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentPendingBody, url: "${api_url}/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+      echo "Status: ${deploymentPendingResponse.status}\nContent: ${deploymentPendingResponse.content}"
+
+      try
+      {
+        // run the build
+        sh "chmod +x Automation/deploy-review-app-to-heroku.sh ; bash ./Automation/deploy-review-app-to-heroku.sh demo ruby-books ${app_name}-pr-${pr_number}"
+      }
+      catch(all)
+      {
+        echo "ERROR encountered during heroku deployment"
+
+        def deploymentFailureBody = """
+        {
+              "state": "failure",
+              "log_url": "https://dashboard.heroku.com/apps/${app_name}-pr-${pr_number}/logs"
+        }
+        """
+        def deploymentFailureResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentFailureBody, url: "${api_url}/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+        echo "Status: ${deploymentFailureResponse.status}\nContent: ${deploymentFailureResponse.content}"
+
+        throw all
+        foundErrors=1
+      }
+
+      def deploymentSuccessBody = """
+      {
+            "state": "success",
+            "log_url": "https://dashboard.heroku.com/apps/${app_name}-pr-${pr_number}/logs",
+            "environment_url": "https://${app_name}-pr-${pr_number}.herokuapp.com"
+      }
+      """
+      def deploymentSuccessResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentSuccessBody, url: "${api_url}/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+      echo "Status: ${deploymentSuccessResponse.status}\nContent: ${deploymentSuccessResponse.content}"
+    }
+  }
+
+
+  
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * END OF LOOP
+  ****************************************************************************************************
+  ***************************************************************************************************/
+}
+/***************************************************************************************************
+****************************************************************************************************
+* HELPER FUNCTIONS BELOW
+***************************************************************************************************
+***************************************************************************************************/
+
+def updateStatus(api_url, statusBody)
+{
+  def sha=sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+  def statusResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: statusBody, url: "${api_url}/repos/demo/Ruby-Books/statuses/${sha}"
+  echo "Status: ${statusResponse.status}\nContent: ${statusResponse.content}"
+}
+
+// Slurper method, using built in json
+@NonCPS
+def parseText(jsonpayload)
+{
+  jp = new groovy.json.JsonSlurper().parseText(jsonpayload)
+  gfi = new GitFlowInfo()
+  gfi.prUrl=jp.payload.pr_url;
+  gfi.prNumber=jp.payload.pr;
+  gfi.gitHeadUrl=jp.payload.head;
+  gfi.gitBaseUrl=jp.payload.base;
+  gfi.gitbefore=jp.payload.before;
+  gfi.gitafter=jp.payload.after;
+  gfi.gitRepository=jp.payload.repository;
+  jp=null
+  return gfi
+}
+
+// GIT Information for flowdock labels
+class GitFlowInfo implements Serializable
+{
+  String prUrl;
+  String prNumber;
+  String gitHeadUrl;
+  String gitBaseUrl;
+  String gitRepository;
+}
