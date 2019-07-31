@@ -34,7 +34,7 @@ echo "-------------------------------------------------"
 echo "------------------------------------"
 echo "---- Running the bundle install ----"
 echo "------------------------------------"
-gem update bundler ; bundle install --path=vendor/bundle --jobs=4 --retry=3
+gem update --system ; bundle install --path=vendor/bundle --jobs=4 --retry=3
 
 # Check the shell error code
 Check_Shell
