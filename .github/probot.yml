@@ -1,0 +1,65 @@
+---
+#########################################
+#########################################
+## .github/probot.yml default Example: ##
+##                                     ##
+## NOTE: You would copy this file to   ##
+## the location .github/probot.yml in  ##
+## the end user repository to change   ##
+## the default checks to the code base ##
+#########################################
+#########################################
+
+#########################################
+# Pull Request Title Override Variables #
+#########################################
+prTitle:
+  # Enable or disable check
+  disabled: false
+  # RegEx to look for pattern match in Pull Request Title
+  regex: '(?:.*)DOE-[0-9]{1,2}(?:.*)'
+  # Message to display in StatusAPI for Success
+  successMessage: 'PR Title has valid Issue ticket number'
+  # Message to display in StatusAPI for Failure
+  failureMessage: 'PR Title must contain Issue ticket number matching DOE-xxxx'
+
+########################################
+# Pull Request Body Override Variables #
+########################################
+prBody:
+  # Enable or disable check
+  disabled: false
+  # Minimum number of checked boxes to mark as success
+  minimumCheckedBoxes: 4
+  # Flag to check for Checked boxes
+  ensureNoCheckedBoxes: true
+  # Message to display in StatusAPI for Success
+  successMessage: 'Checklist Complete'
+  # Message to display in StatusAPI for Failure
+  failureMessage: 'Minimum 4 boxes must be checked and no custom boxes can remain unchecked'
+
+#############################################
+# Pull Request ChangeLog Override Variables #
+#############################################
+prChangelog:
+  # Enable or disable check
+  disabled: false
+  # RegEx to look for pattern match in CHANGELOG
+  regex: '##\s*\[(?:UNRELEASED|\s*)\]\n\*(?:\s*)\[(?:FIXED|SECURITY|ADDED|CHANGED|PERFORMANCE|DOCUMENTATION|PIPELINE|KNOWNISSUE)\].*'
+  # Message to display in StatusAPI for Success
+  successMessage: 'CHANGELOG entry has been added'
+  # Message to display in StatusAPI for Failure
+  failureMessage: 'Must add a valid CHANGELOG entry'
+
+#########################################
+# Branch Comparision Override Variables #
+#########################################
+prBranches:
+  # Enable or disable check
+  disabled: false
+  # Key/Value pair for branches allowed to be merged together
+  allowedBranches: {"master": "*"},
+  # Message to display in StatusAPI for Success
+  successMessage: 'Branches are valid'
+  # Message to display in StatusAPI for Failure
+  failureMessage: 'Branch combination is invalid'
