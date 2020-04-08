@@ -58,7 +58,7 @@ prBranches:
   # Enable or disable check
   disabled: false
   # Key/Value pair for branches allowed to be merged together
-  allowedBranches: {"master": "*"},
+  allowedBranches: {"master": "*"}
   # Message to display in StatusAPI for Success
   successMessage: 'Branches are valid'
   # Message to display in StatusAPI for Failure
