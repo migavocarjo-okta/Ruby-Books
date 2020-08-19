@@ -24,7 +24,7 @@ node("hubot")
   def branch
   def deployment_id
   def git_url="${domain_name}/migavocarjo-okta/Ruby-Books.git"
-  def api_url="${domain_name}/api/v3"
+  def api_url="https://api.github.com"
   def app_name="${user_name}-ruby-books"
 
   // Need to get the branch of code we need
@@ -51,7 +51,7 @@ node("hubot")
   sh "echo $branch"
 
   // Clone the repo
-  git credentialsId: 'github-cred', url: "${git_url}", branch: "${branch}"
+  git credentialsId: 'Migavocarjo-Okta', url: "${git_url}", branch: "${branch}"
   
   /***************************************************************************************************
   ****************************************************************************************************
@@ -77,7 +77,7 @@ node("hubot")
             "description":"Bundle Install Succeeded"
       }
       """
-      // updateStatus(api_url, statusBody)
+      updateStatus(api_url, statusBody)
     }
     catch(all)
     {
@@ -91,7 +91,7 @@ node("hubot")
             "description":"ERROR encountered during ruby bundle install"
       }
       """
-      // updateStatus(api_url, statusBody)
+      updateStatus(api_url, statusBody)
       
       throw all
       foundErrors=1
@@ -122,7 +122,7 @@ node("hubot")
             "description":"DB successfully configured"
       }
       """
-      // updateStatus(api_url, statusBody)
+      updateStatus(api_url, statusBody)
     }
     catch(all)
     {
@@ -136,7 +136,7 @@ node("hubot")
             "description":"ERROR encountered during ruby db config"
       }
       """
-      // updateStatus(api_url, statusBody)
+      updateStatus(api_url, statusBody)
       
       throw all
       foundErrors=1
@@ -181,7 +181,7 @@ node("hubot")
             "description":"ERROR encountered during RSPEC"
       }
       """
-      // updateStatus(api_url, statusBody)
+      updateStatus(api_url, statusBody)
       
       throw all
       foundErrors=1
@@ -244,7 +244,7 @@ node("hubot")
             "environment": "review"
       }
       """
-      def createDeploymentResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: createDeploymentBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/deployments"
+      def createDeploymentResponse = httpRequest authentication: 'Migavocarjo-Okta', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: createDeploymentBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/deployments"
       echo "Status: ${createDeploymentResponse.status}\nContent: ${createDeploymentResponse.content}"
 
       def deployment = readJSON text: createDeploymentResponse.content
@@ -258,7 +258,7 @@ node("hubot")
             "log_url": "https://dashboard.heroku.com/apps/<YOUR-NAME>-ruby-books-pr-${pr_number}/logs"
       }
       """
-      def deploymentPendingResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentPendingBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/deployments/${deployment_id}/statuses"
+      def deploymentPendingResponse = httpRequest authentication: 'Migavocarjo-Okta', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentPendingBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/deployments/${deployment_id}/statuses"
       echo "Status: ${deploymentPendingResponse.status}\nContent: ${deploymentPendingResponse.content}"
 
       try
@@ -276,7 +276,7 @@ node("hubot")
               "log_url": "https://dashboard.heroku.com/apps/${app_name}-pr-${pr_number}/logs"
         }
         """
-        def deploymentFailureResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentFailureBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/deployments/${deployment_id}/statuses"
+        def deploymentFailureResponse = httpRequest authentication: 'Migavocarjo-Okta', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentFailureBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/deployments/${deployment_id}/statuses"
         echo "Status: ${deploymentFailureResponse.status}\nContent: ${deploymentFailureResponse.content}"
 
         throw all
@@ -290,7 +290,7 @@ node("hubot")
             "environment_url": "https://${app_name}-pr-${pr_number}.herokuapp.com"
       }
       """
-      def deploymentSuccessResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentSuccessBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/deployments/${deployment_id}/statuses"
+      def deploymentSuccessResponse = httpRequest authentication: 'Migavocarjo-Okta', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentSuccessBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/deployments/${deployment_id}/statuses"
       echo "Status: ${deploymentSuccessResponse.status}\nContent: ${deploymentSuccessResponse.content}"
     }
   }
@@ -312,7 +312,7 @@ node("hubot")
 def updateStatus(api_url, statusBody)
 {
   def sha=sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
-  def statusResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: statusBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/statuses/${sha}"
+  def statusResponse = httpRequest authentication: 'Migavocarjo-Okta', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: statusBody, url: "${api_url}/repos/migavocarjo-okta/Ruby-Books/statuses/${sha}"
   echo "Status: ${statusResponse.status}\nContent: ${statusResponse.content}"
 }
 
