@@ -77,7 +77,7 @@ node("hubot")
             "description":"Bundle Install Succeeded"
       }
       """
-      updateStatus(api_url, statusBody)
+      // updateStatus(api_url, statusBody)
     }
     catch(all)
     {
@@ -91,7 +91,7 @@ node("hubot")
             "description":"ERROR encountered during ruby bundle install"
       }
       """
-      updateStatus(api_url, statusBody)
+      // updateStatus(api_url, statusBody)
       
       throw all
       foundErrors=1
@@ -122,7 +122,7 @@ node("hubot")
             "description":"DB successfully configured"
       }
       """
-      updateStatus(api_url, statusBody)
+      // updateStatus(api_url, statusBody)
     }
     catch(all)
     {
@@ -136,7 +136,7 @@ node("hubot")
             "description":"ERROR encountered during ruby db config"
       }
       """
-      updateStatus(api_url, statusBody)
+      // updateStatus(api_url, statusBody)
       
       throw all
       foundErrors=1
@@ -167,7 +167,7 @@ node("hubot")
             "description":"RSpec tests passed"
       }
       """
-      updateStatus(api_url, statusBody)
+      // Status(api_url, statusBody)
     }
     catch(all)
     {
@@ -181,7 +181,7 @@ node("hubot")
             "description":"ERROR encountered during RSPEC"
       }
       """
-      updateStatus(api_url, statusBody)
+      // updateStatus(api_url, statusBody)
       
       throw all
       foundErrors=1
