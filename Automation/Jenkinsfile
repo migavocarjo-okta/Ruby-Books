@@ -51,7 +51,7 @@ node("hubot")
   sh "echo $branch"
 
   // Clone the repo
-  git credentialsId: 'Migavocarjo-Okta', url: "${git_url}", branch: "${branch}"
+  git credentialsId: 'github-app', url: "${git_url}", branch: "${branch}"
   
   /***************************************************************************************************
   ****************************************************************************************************
