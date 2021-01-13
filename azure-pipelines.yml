@@ -20,6 +20,7 @@ steps:
   displayName: 'bundle install'
   
 - script: |
+    chmod +x ./Automation/configure-install-db.sh
     ./Automation/configure-install-db.sh
   displayName: 'Configure DB'
 
