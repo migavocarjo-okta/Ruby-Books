@@ -52,6 +52,14 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "migarjo-ruby-books" #Must be unique in Heroku
           heroku_email: "mjohn174@gmail.com"
+      - name: Update result to Deployment API
+        if: always()
+        uses: unacast/actions-github-deployment-status@[version]
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          description: "Deployed to Production"
+          environment_url: "https://migarjo-ruby-books.herokuapp.com/"
   deploy-to-review:
     name: Deploy to Heroku Review
     if: ${{github.ref != 'ref/head/master'}}
@@ -63,3 +71,11 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "migarjo-ruby-books-review"
           heroku_email: "mjohn174@gmail.com"
+      - name: Update result to Deployment API
+        if: always()
+        uses: unacast/actions-github-deployment-status@[version]
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          description: "Deployed to Review"
+          environment_url: "https://migarjo-ruby-books-review.herokuapp.com/"          
