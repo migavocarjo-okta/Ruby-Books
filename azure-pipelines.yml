@@ -7,8 +7,8 @@ trigger:
   branches:
     include: 
       - master
-  pr:
-    - master
+pr:
+  - master
 
 
 pool:
