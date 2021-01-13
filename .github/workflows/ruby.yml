@@ -65,17 +65,25 @@ jobs:
     if: ${{github.ref != 'ref/head/master'}}
     runs-on: ubuntu-latest
     steps:
+      - name: start deployment
+        uses: bobheadxi/deployments@v0.4.3
+        id: deployment
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: release
       - uses: actions/checkout@v2
       - uses: akhileshns/heroku-deploy@v3.8.9 # This is the action
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "migarjo-ruby-books-review"
           heroku_email: "mjohn174@gmail.com"
-      - name: Update result to Deployment API
+      - name: update deployment status
+        uses: bobheadxi/deployments@v0.4.3
         if: always()
-        uses: unacast/actions-github-deployment-status@0.4.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ job.status }}
-          description: "Deployed to Review"
-          environment_url: "https://migarjo-ruby-books-review.herokuapp.com/"          
+          env_url: "https://migarjo-ruby-books.herokuapp.com/" 
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}     
