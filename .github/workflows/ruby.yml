@@ -44,7 +44,7 @@ jobs:
   deploy-to-production:
     name: Deploy to Heroku Prod
     if: ${{github.ref == 'ref/head/master'}}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: start deployment
         uses: bobheadxi/deployments@v0.4.3
@@ -71,7 +71,7 @@ jobs:
   deploy-to-review:
     name: Deploy to Heroku Review
     if: ${{github.ref != 'ref/head/master'}}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: start deployment
         uses: bobheadxi/deployments@v0.4.3
