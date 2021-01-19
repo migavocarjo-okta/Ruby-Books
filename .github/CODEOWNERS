@@ -6,19 +6,3 @@
 ################
 
 *    @deepthought-the-bot
-
-#########
-# Teams #
-#########
-
-# Robots to solve everything
-*    @demo-org/Autobots
-
-# Hardware team for the autmation
-Automation/*    @demo-org/sme-hardware-team
-
-# Node Experts for the codebase
-README.md    @demo-org/sme-documentation
-
-# Node experts to solve dependency issues
-gemfile*     @demo-org/sme-ruby
