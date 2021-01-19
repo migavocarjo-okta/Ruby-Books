@@ -5,14 +5,7 @@
 # Single users #
 ################
 
-# Creator is in control
-*    @CREATOR
-
-# Admiral is always the boss
-*    @admiralawkbar
-
-# Hubot can update itself
-*    @hubot
+*    @deepthought-the-bot
 
 #########
 # Teams #
