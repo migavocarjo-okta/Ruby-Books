@@ -43,7 +43,7 @@ jobs:
       run: bundle exec rake
   deploy-to-production:
     name: Deploy to Heroku Prod
-    if: ${{github.ref == 'ref/head/master'}}
+    if: ${{github.ref == 'ref/head/main'}}
     runs-on: ubuntu-latest
     steps:
       - name: start deployment
@@ -70,7 +70,7 @@ jobs:
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}     
   deploy-to-review:
     name: Deploy to Heroku Review
-    if: ${{github.ref != 'ref/head/master'}}
+    if: ${{github.ref != 'ref/head/main'}}
     runs-on: ubuntu-latest
     steps:
       - name: start deployment
